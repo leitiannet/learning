@@ -75,13 +75,14 @@ NODES=6
 #功能说明
 function usage()
 {
-	echo "Usage: $0 [create|delete|start|stop|expand|shrink]			"
+	echo "Usage: $0 [create|delete|start|stop|expand|shrink|flush]		"
 	echo "create <port> <nodes>     -- Create and launch a cluster.  	"
 	echo "delete                    -- Stop and delete cluster.      	"
 	echo "start                     -- Start Redis Cluster instances.	"
 	echo "stop                      -- Stop Redis Cluster instances. 	"
 	echo "expand <port> <nodes>     -- Add Redis Cluster instances.   	"
 	echo "shrink <port> <nodes>     -- Remove Redis Cluster instances.	"
+	echo "flush                     -- Flush Redis Cluster instances.	"
 }
 
 #创建redis集群相关文件夹和文件
@@ -204,6 +205,37 @@ function launch_cluster()
 	${REDIS_TRIB} create --replicas 1 ${HOSTS}
 }
 
+#清空redis集群
+function flush_cluster()
+{
+	#获取一个运行节点
+	port=`ps -ef | grep 'redis-server' | grep 'cluster' | awk '{print $9}' | cut -f 2 -d ":" | head -n 1`
+	if [ -z "${port}" ]; then
+		echo "no running redis"
+		exit 1
+	fi
+	
+	#获取所有主节点
+	masters=`${REDIS_CLI} -p ${port} cluster nodes | awk -F[\ \:\@] '/master/{ printf("%s:%s\n",$2,$3); }'`
+	if [ -z "${masters}" ]; then
+		#ERR This instance has cluster support disabled
+		#Could not connect to Redis at 127.0.0.1:7009: Connection refused
+		exit 1
+	fi
+
+	for master in ${masters};
+	do
+		if [ ! -z "${master}" ]; then
+			eval $(echo "${master}" | awk -F[\:] '{ printf("redis_node_ip=%s\nredis_node_port=%s\n",$1,$2) }')
+			if [ ! -z "${redis_node_ip}" -a ! -z "${redis_node_port}" ]; then
+				echo "clearing ${redis_node_ip}:${redis_node_port}..."
+				result=`${REDIS_CLI} -h ${redis_node_ip} -p ${redis_node_port} flushall`
+				echo "$result"
+			fi
+		fi
+	done
+}
+
 ##############################执行入口########################
 #通过config.sh修改默认配置
 if [ -a config.sh ]
@@ -261,6 +293,12 @@ fi
 if [ "${COMMAND}" == "shrink" ]
 then
 	del_node
+    exit 0
+fi
+
+if [ "${COMMAND}" == "flush" ]
+then
+	flush_cluster
     exit 0
 fi
 
