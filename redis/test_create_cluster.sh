@@ -16,7 +16,7 @@ nodes-{port}.conf
 dump-{port}.rdb
 appendonly-{port}.aof
 
-# bash -x redis_create_cluster.sh
+# bash -x test_create_cluster.sh
 # tree /usr/local/cluster
 /usr/local/cluster
 ├── conf
