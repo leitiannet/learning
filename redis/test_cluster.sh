@@ -240,7 +240,7 @@ function check_node()
 	fi
 	port=$1
 	#nodes=$2
-	${REDIS_TRIB} check 127.0.0.1:"${port}"
+	${REDIS_TRIB} check 127.0.0.1:${port}
 }
 
 #启动redis集群
