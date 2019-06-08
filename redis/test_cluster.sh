@@ -66,23 +66,20 @@ CLUSTER_LOG_DIR="${CLUSTER_DIR}log/"
 #节点启动文件
 CLUSTER_START_FILE="${CLUSTER_DIR}redis-start.sh"
 CLUSTER_STOP_FILE="${CLUSTER_DIR}redis-stop.sh"
-#命令行参数
-COMMAND=""
-PORT=7000
-NODES=6
 
 ##############################辅助函数########################
 #功能说明
 function usage()
 {
-	echo "Usage: $0 [create|delete|start|stop|expand|shrink|flush]		"
+	echo "Usage: $0 [create|delete|start|stop|expand|shrink|flush|check]		"
 	echo "create <port> <nodes>     -- Create and launch a cluster.  	"
-	echo "delete                    -- Stop and delete cluster.      	"
-	echo "start                     -- Start Redis Cluster instances.	"
-	echo "stop                      -- Stop Redis Cluster instances. 	"
+	echo "delete <port> <nodes>     -- Stop and delete cluster.      	"
+	echo "start  <port> <nodes>     -- Start Redis Cluster instances.	"
+	echo "stop   <port> <nodes>     -- Stop Redis Cluster instances. 	"
 	echo "expand <port> <nodes>     -- Add Redis Cluster instances.   	"
 	echo "shrink <port> <nodes>     -- Remove Redis Cluster instances.	"
-	echo "flush                     -- Flush Redis Cluster instances.	"
+	echo "flush  <port> <nodes>     -- Flush Redis Cluster instances.	"
+	echo "check  <port> <nodes>     -- Check Redis Cluster instances.	"
 }
 
 #创建redis集群相关文件夹和文件
@@ -111,7 +108,13 @@ function remove_resource()
 #增加redis节点
 function add_node()
 {
-	for i in `seq ${PORT} $((PORT+NODES-1))`;
+	if [ ! $# -eq 2 ]; then
+		echo "parameter error"
+		exit 1
+	fi
+	port=$1
+	nodes=$2
+	for i in `seq ${port} $((port+nodes-1))`;
 	do
 		conf_file="${CLUSTER_CONF_DIR}redis-${i}.conf"
 		cat <<EOF > ${conf_file}
@@ -148,7 +151,13 @@ EOF
 #删除redis节点
 function del_node()
 {
-	for i in `seq ${PORT} $((PORT+NODES-1))`;
+	if [ ! $# -eq 2 ]; then
+		echo "parameter error"
+		exit 1
+	fi
+	port=$1
+	nodes=$2
+	for i in `seq ${port} $((port+nodes-1))`;
 	do
 		#删除端口对应的文件
 		rm -rf ${CLUSTER_CONF_DIR}redis-${i}.conf
@@ -161,60 +170,46 @@ function del_node()
 	done
 }
 
-#启动所有redis节点
+#启动redis节点
 function start_node()
 {
-	if [ -f "${CLUSTER_START_FILE}" ]; then  
-		bash ${CLUSTER_START_FILE}
+	if [ ! $# -eq 2 ]; then
+		echo "parameter error"
+		exit 1
 	fi
-}
-
-#停止所有redis节点
-function stop_node()
-{
-	if [ -f "${CLUSTER_STOP_FILE}" ]; then  
-		bash ${CLUSTER_STOP_FILE}
-	else
-		#ps -ef | grep 'redis-server' | grep 'cluster' | awk '{print $2}' | xargs kill -9
-		pids=`ps -ef | grep 'redis-server' | grep 'cluster' | awk '{print $2}'`
-		for pid in ${pids};
-		do
-			if [ ! -z "${pid}" ]; then
-				kill -9 ${pid}
-			fi
-		done
-	fi
-}
-
-#启动redis集群
-function launch_cluster()
-{
-	HOSTS=""
-	#获取运行的redis端口
-	ports=`ps -ef | grep 'redis-server' | grep 'cluster' | awk '{print $9}' | cut -f 2 -d ":" | sort`
-	for i in ${ports};
+	port=$1
+	nodes=$2	
+	for i in `seq ${port} $((port+nodes-1))`;
 	do
-		if [ ! -z "${i}" ]; then
-			HOSTS="$HOSTS 127.0.0.1:${i}"
-		fi
+		${REDIS_SERVER} ${CLUSTER_CONF_DIR}redis-${i}.conf &
+		sleep 2
 	done
-	if [ -z "${HOSTS}" ]; then
-		echo "no redis cluster running"
-		exit 1
-	fi
-	${REDIS_TRIB} create --replicas 1 ${HOSTS}
 }
 
-#清空redis集群
-function flush_cluster()
-{
-	#获取一个运行节点
-	port=`ps -ef | grep 'redis-server' | grep 'cluster' | awk '{print $9}' | cut -f 2 -d ":" | head -n 1`
-	if [ -z "${port}" ]; then
-		echo "no running redis"
+#停止redis节点
+function stop_node()
+{	
+	if [ ! $# -eq 2 ]; then
+		echo "parameter error"
 		exit 1
 	fi
-	
+	port=$1
+	nodes=$2
+	for i in `seq ${port} $((port+nodes-1))`;
+	do
+		${REDIS_CLI} -p ${i} shutdown nosave
+	done
+}
+
+#清空redis节点
+function flush_node()
+{
+	if [ ! $# -eq 2 ]; then
+		echo "parameter error"
+		exit 1
+	fi
+	port=$1
+	#nodes=$2
 	#获取所有主节点
 	masters=`${REDIS_CLI} -p ${port} cluster nodes | awk -F[\ \:\@] '/master/{ printf("%s:%s\n",$2,$3); }'`
 	if [ -z "${masters}" ]; then
@@ -236,6 +231,37 @@ function flush_cluster()
 	done
 }
 
+#
+function check_node()
+{	
+	if [ ! $# -eq 2 ]; then
+		echo "parameter error"
+		exit 1
+	fi
+	port=$1
+	#nodes=$2
+	${REDIS_TRIB} check 127.0.0.1:"${port}"
+}
+
+#启动redis集群
+function launch_cluster()
+{
+	HOSTS=""
+	#获取运行的redis端口
+	ports=`ps -ef | grep 'redis-server' | grep 'cluster' | awk '{print $9}' | cut -f 2 -d ":" | sort`
+	for i in ${ports};
+	do
+		if [ ! -z "${i}" ]; then
+			HOSTS="$HOSTS 127.0.0.1:${i}"
+		fi
+	done
+	if [ -z "${HOSTS}" ]; then
+		echo "no redis cluster running"
+		exit 1
+	fi
+	${REDIS_TRIB} create --replicas 1 ${HOSTS}
+}
+
 ##############################执行入口########################
 #通过config.sh修改默认配置
 if [ -a config.sh ]
@@ -243,23 +269,26 @@ then
     source "config.sh"
 fi
 
-if [ $# -gt 0 ]; then
+#命令行参数
+COMMAND=""
+PORT=7000
+NODES=6
+
+if [ $# -eq 1 -o $# -eq 3 ]; then
 	COMMAND=$1
-fi
-if [ $# -gt 1 ]; then
-	PORT=$2
-fi
-if [ $# -gt 2 ]; then
-	NODES=$3
+	if [ $# -eq 3 ]; then
+		PORT=$2
+		NODES=$3
+	fi
 fi
 
 if [ "${COMMAND}" == "create" ]
 then
-	stop_node
+	stop_node ${PORT} ${NODES}
 	remove_resource
 	create_resource
-	add_node
-	start_node
+	add_node ${PORT} ${NODES}
+	start_node ${PORT} ${NODES}
 	sleep 2
 	launch_cluster
     exit 0
@@ -267,38 +296,44 @@ fi
 
 if [ "${COMMAND}" == "delete" ]
 then
-	stop_node
+	stop_node ${PORT} ${NODES}
 	remove_resource
     exit 0
 fi
 
 if [ "${COMMAND}" == "start" ]
 then
-	start_node
+	start_node ${PORT} ${NODES}
     exit 0
 fi
 
 if [ "${COMMAND}" == "stop" ]
 then
-	stop_node
+	stop_node ${PORT} ${NODES}
     exit 0
 fi
 
 if [ "${COMMAND}" == "expand" ]
 then
-	add_node
+	add_node ${PORT} ${NODES}
     exit 0
 fi
 
 if [ "${COMMAND}" == "shrink" ]
 then
-	del_node
+	del_node ${PORT} ${NODES}
     exit 0
 fi
 
 if [ "${COMMAND}" == "flush" ]
 then
-	flush_cluster
+	flush_node ${PORT} ${NODES}
+    exit 0
+fi
+
+if [ "${COMMAND}" == "check" ]
+then
+	check_node ${PORT} ${NODES}
     exit 0
 fi
 
