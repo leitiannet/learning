@@ -72,14 +72,14 @@ CLUSTER_STOP_FILE="${CLUSTER_DIR}redis-stop.sh"
 function usage()
 {
 	echo "Usage: $0 [create|delete|start|stop|expand|shrink|flush|check]		"
-	echo "create <port> <nodes>     -- Create and launch a cluster.  	"
-	echo "delete <port> <nodes>     -- Stop and delete cluster.      	"
-	echo "start  <port> <nodes>     -- Start Redis Cluster instances.	"
-	echo "stop   <port> <nodes>     -- Stop Redis Cluster instances. 	"
-	echo "expand <port> <nodes>     -- Add Redis Cluster instances.   	"
-	echo "shrink <port> <nodes>     -- Remove Redis Cluster instances.	"
-	echo "flush  <port> <nodes>     -- Flush Redis Cluster instances.	"
-	echo "check  <port> <nodes>     -- Check Redis Cluster instances.	"
+	echo "create <port> <nodes>     -- Create and launch a cluster.  			"
+	echo "delete <port> <nodes>     -- Stop and delete cluster.      			"
+	echo "start  <port> <nodes>     -- Start Redis Cluster instances.			"
+	echo "stop   <port> <nodes>     -- Stop Redis Cluster instances. 			"
+	echo "expand <port> <nodes>     -- Add Redis Cluster instances.   			"
+	echo "shrink <port> <nodes>     -- Remove Redis Cluster instances.			"
+	echo "flush  <port> <nodes>     -- Flush Redis Cluster instances.			"
+	echo "check  <port> <nodes>     -- Check Redis Cluster instances.			"
 }
 
 #创建redis集群相关文件夹和文件
