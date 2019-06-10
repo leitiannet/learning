@@ -66,6 +66,8 @@ CLUSTER_LOG_DIR="${CLUSTER_DIR}log/"
 #节点启动文件
 CLUSTER_START_FILE="${CLUSTER_DIR}redis-start.sh"
 CLUSTER_STOP_FILE="${CLUSTER_DIR}redis-stop.sh"
+#本地IP地址
+LOCAL_ADDRESS=`ifconfig eth0 | grep "inet addr" | cut -f 2 -d ":" | cut -f 1 -d " "`
 
 ##############################辅助函数########################
 #功能说明
@@ -240,7 +242,7 @@ function check_node()
 	fi
 	port=$1
 	#nodes=$2
-	${REDIS_TRIB} check 127.0.0.1:${port}
+	${REDIS_TRIB} check ${LOCAL_ADDRESS}:${port}
 }
 
 #启动redis集群
@@ -252,7 +254,7 @@ function launch_cluster()
 	for i in ${ports};
 	do
 		if [ ! -z "${i}" ]; then
-			HOSTS="$HOSTS 127.0.0.1:${i}"
+			HOSTS="$HOSTS ${LOCAL_ADDRESS}:${i}"
 		fi
 	done
 	if [ -z "${HOSTS}" ]; then
