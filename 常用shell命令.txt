@@ -1,0 +1,82 @@
+﻿
+(1) tail
+tail -f filename
+监视filename文件的尾部内容
+
+tail -n 20 filename
+显示filename最后20行(默认10行)
+
+tail *.conf
+查看多个文件（显示文件名）
+
+
+
+(2) grep
+-E		解释PATTERN作为扩展正则表达式，也就相当于使用egrep。 或操作
+-i		搜索时候忽略大小写
+-v		反转匹配，选择没有被匹配到的内容。
+-w		匹配整词，精确地单词,单词的两边必须是非字符符号(即不能是字母数字或下划线)
+-L		列出文件内容不符合指定的范本样式的文件名称
+-l		列出文件内容符合指定的范本样式的文件名称。
+-n		输出匹配内容的同时输出其所在行号
+-c		抑制正常输出;而是为每个输入文件打印匹配线的计数。
+-R ,-r	以递归方式读取每个目录下的所有文件
+
+-A num	匹配到搜索到的行以及该行下面的num行
+-B num	匹配到搜索到的行以及该行上面的num行
+-C num	匹配到搜索到的行以及上下各num行
+
+
+cat filename | grep -i pattern
+
+grep pattern files ...
+多文件搜索
+
+grep -i pattern files
+不区分大小写地搜索（默认情况区分大小写）
+
+grep -l pattern files
+列出匹配的文件名
+
+grep -L pattern files
+列出不匹配的文件名
+
+grep -E 'pattern1 | pattern2' files
+显示匹配 pattern1 或 pattern2 的行
+grep pattern1 files | grep pattern2
+显示既匹配 pattern1 又匹配 pattern2 的行。
+
+
+grep 'log' /home/admin -r -n
+目录下查找所有符合关键字的文件  
+grep 'shopbase' /home/admin -r -n --include *.{vm,java}
+指定文件后缀
+grep 'shopbase' /home/admin -r -n --exclude *.{vm,java}
+反匹配
+
+
+# seq 10 | grep 5 -A 2
+5
+6
+7
+# seq 10 | grep 5 -B 2
+3
+4
+5
+# seq 10 | grep 5 -C 2
+3
+4
+5
+6
+7
+
+
+
+
+
+
+
+
+
+
+
