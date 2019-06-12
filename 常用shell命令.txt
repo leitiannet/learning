@@ -69,10 +69,86 @@ grep 'shopbase' /home/admin -r -n --exclude *.{vm,java}
 
 
 
+===================================================================
+set
+修改shell环境的运行参数
+-u			      当执行时使用到未定义过的变量，则显示错误信息。等价于-o nounset
+-x        	  执行指令之前先显示指令及参数。等价于-o xtrace
+-e            若指令传回值不等于0，则立即退出shell（不适用于管道命令）。等价于-o errexit
+-o pipefail	  只要一个子命令失败，整个管道命令就失败，则立即退出shell
++<参数>   	  取消某个set设置的参数
+https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+
+set命令可以放在一起使用（建议放在所有Bash脚本的头部）
+# 写法一
+set -euxo pipefail
+# 写法二
+set -eux
+set -o pipefail
+
+也可以在执行Bash脚本的时候，从命令行传入set参数。
+bash -euxo pipefail script.sh
+
+用法示例：
+set
+显示所有的环境变量和Shell函数
+
+set -x	#开启调试
+......
+set +x	#关闭调试
+
+
+set +e 	#关闭-e选项
+command1
+command2
+set -e	#重新打开-e选项
+===================================================================
 
 
 
 
+
+
+
+
+
+
+
+
+
+===================================================================
+脚本调试
+(1) bash -x script.sh
+(2) set -x
+
+
+脚本错误处理
+如果脚本里面有运行失败的命令（返回值非0），Bash默认忽略这个错误（只是显示有错误，并没有终止执行），继续执行后面的命令。实际开发中，如果某个命令失败，往往需要脚本停止执行，防止错误累积。
+(1) command || exit 1
+只要command有非零返回值，脚本就会停止执行
+# 写法一
+command || { echo "command failed"; exit 1; }
+# 写法二
+if ! command; then echo "command failed"; exit 1; fi
+# 写法三
+command
+if [ "$?" -ne 0 ]; then echo "command failed"; exit 1; fi
+
+(2) command1 && command2
+只有第一个命令成功了，才能继续执行第二个命令(命令有继承关系)
+
+(3) set -e和set -o pipefail
+脚本只要发生错误，就终止执行。
+如果希望在命令失败的情况下，脚本继续执行下去。
+写法一
+command || true
+命令即使执行失败，脚本也不会终止执行。
+写法二
+set +e
+command1
+command2
+set -e
+===================================================================
 
 
 
