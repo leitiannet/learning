@@ -156,7 +156,6 @@ set -e
 timeout [选项] 数字[后缀] 命令 [参数]...
 用来控制程序运行的时间。运行指定的命令，如果在指定时间后仍在运行，则杀死该进程。
 后缀”s”代表秒(默认值)，”m”代表分，”h”代表小时，”d”代表天
-
 # timeout 3s sleep 1
 # echo $?
 0
@@ -164,7 +163,14 @@ timeout [选项] 数字[后缀] 命令 [参数]...
 # echo $?
 124
 
-
+另一种方式
+#!/bin/sh
+timeout=10
+(sleep $timeout && kill $$) &
+while : ; do
+    echo "aaa" 
+    sleep 1
+done
 
 
 
