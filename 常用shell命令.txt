@@ -153,3 +153,34 @@ set -e
 
 
 
+
+
+
+
+
+
+
+server_name=xxx
+function usage(){
+  cat <<-EOF
+usage: $0 action
+action:
+	start           start the ${server_name}
+	stop            stop the ${server_name}
+	restart         restart ${server_name}
+	status          return the status of ${server_name}, run or down
+	monitor         return TRUE if the ${server_name} appears to be working.
+EOF
+  exit 0
+}
+
+if [ -f $filename ];then
+    source $filename
+fi
+
+date '+%Y%m%d %T'
+
+timeout 3 xxx
+
+
+
