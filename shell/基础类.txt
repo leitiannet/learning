@@ -72,12 +72,14 @@ grep 'shopbase' /home/admin -r -n --exclude *.{vm,java}
 ===================================================================
 set
 修改shell环境的运行参数
--u			      当执行时使用到未定义过的变量，则显示错误信息。等价于-o nounset
--x        	  执行指令之前先显示指令及参数。等价于-o xtrace
--e            若指令传回值不等于0，则立即退出shell（不适用于管道命令）。等价于-o errexit
--o pipefail	  只要一个子命令失败，整个管道命令就失败，则立即退出shell
-+<参数>   	  取消某个set设置的参数
+-u			当执行时使用到未定义过的变量，则显示错误信息。等价于-o nounset
+-x        	  	执行指令之前先显示指令及参数。等价于-o xtrace
+-e       		若指令传回值不等于0，则立即退出shell（不适用于管道命令）。等价于-o errexit
+-o pipefail		只要一个子命令失败，整个管道命令就失败，则立即退出shell
++<参数>		      取消某个set设置的参数
 https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+
+说明：-u和-o体现fail fast设计思想
 
 set命令可以放在一起使用（建议放在所有Bash脚本的头部）
 # 写法一
@@ -118,8 +120,19 @@ set -e	#重新打开-e选项
 
 ===================================================================
 脚本调试
-(1) bash -x script.sh
-(2) set -x
+(0) echo
+function log()
+{
+	local prefix="[$(date +%Y/%m/%d\ %H:%M:%S)]: "
+	echo "${prefix} $@" >&2
+}
+log "INFO" "a message"
+(1) set -x
+(2) bash -x script.sh
+bash -n script.sh
+对脚本进行语法检查
+bash -v script.sh
+跟踪脚本里的每个命令的执行
 
 
 脚本错误处理
@@ -194,6 +207,19 @@ if [ -f $filename ];then
 fi
 
 date '+%Y%m%d %T'
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
