@@ -249,7 +249,26 @@ http://www.linuxdown.net/install/faq/20160319_how_linux_5069.html
 
 
 
+nohup和&区别
+&：后台运行，忽略SIGINT信号（Ctrl + C）
+nohup：不挂断的运行，忽略SIGHUP信号（关闭session）
+使用&后台运行程序：
+（1）结果输出到终端
+（2）使用Ctrl + C发送SIGINT信号，程序免疫
+（3）关闭session发送SIGHUP信号，程序关闭
+使用nohup运行程序：
+（1）结果输出到nohup.out
+（2）使用Ctrl + C发送SIGINT信号，程序关闭
+（3）关闭session发送SIGHUP信号，程序免疫
+一般将nohup和&结合使用，就可以实现使命令永久地在后台执行的功能
+nohup command > out.file 2>&1 &
+也可以编写脚本
+trap "" SIGHUP #该句的作用是屏蔽SIGHUP信号，trap可以屏蔽很多信号
+command
 
+shopt | grep hupon 查看shell针对hup信号选项配置。如果为off，则表示终端退出时，shell不发送SIGHUP信号；为on,则表示会发送
+# shopt | grep hupon
+huponexit       off
 
 
 
