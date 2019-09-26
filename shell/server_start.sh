@@ -15,6 +15,7 @@ function exec_start()
 
 function exec_stop()
 {
+	#ps -eo 'pid,args' | grep ${SERVER_EXEC} | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
 	kill -s SIGTERM ${pid} >/dev/null 2>&1
 }
 
