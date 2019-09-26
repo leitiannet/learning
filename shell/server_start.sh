@@ -66,7 +66,7 @@ function stop()
     ok_msg "stop ${SERVER_NAME}..."
 	exec_stop
 	for((i=0;i<10;i++)); do
-		if [ -x /proc/${pid} ]; then 
+		if [ -d /proc/${pid} ]; then 
 			ok_msg "Waiting for ${SERVER_NAME} to stop..."
 			sleep 1
 		else
