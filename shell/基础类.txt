@@ -1,13 +1,47 @@
 ﻿
 (1) tail
+tail *.conf
+查看多个文件（显示文件名）
 tail -f filename
 监视filename文件的尾部内容
 
 tail -n 20 filename
 显示filename最后20行(默认10行)
 
-tail *.conf
-查看多个文件（显示文件名）
+-n后面的数字无符号，表示行数。如 tail -n 3 test 后3行；
+正数：表示从正数第几行起。 如 tail -n +3 test 从前面开始的第3行到结束
+负数：表示从倒数第几行起。 如 tail -n -3 test 从后面数第3行到结束
+# cat test 
+1
+2
+3
+4
+5
+6
+7
+8
+9
+# tail -n 3 test 
+7
+8
+9
+# tail -3 test 
+7
+8
+9
+# tail -n -3 test 
+7
+8
+9
+# tail -n +3 test 
+3
+4
+5
+6
+7
+8
+9
+
 
 
 (2) grep
