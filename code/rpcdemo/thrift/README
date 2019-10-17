@@ -1,0 +1,2 @@
+server/server.go和client/client.go使用单服务
+server/server2.go和client/client2.go使用多服务
