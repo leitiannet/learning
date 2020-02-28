@@ -59,6 +59,8 @@ tail -n 20 filename
 -B num	匹配到搜索到的行以及该行上面的num行
 -C num	匹配到搜索到的行以及上下各num行
 
+grep --exclude-dir=.bzr --exclude-dir=CVS --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn
+
 cat filename | grep -i pattern
 
 grep pattern files ...
